@@ -14,6 +14,8 @@ app.get('/', (req, res) => {
     res.send('Welcome to the server!');
 })
 
+const userRoute = require('./routes/userRoute');
+app.use('/api/v1/users', userRoute);
 
 app.use(globalCatch);
 
