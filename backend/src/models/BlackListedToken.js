@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const schema = new mongoose.Schema({
+const ExpTokenSchema = new mongoose.Schema({
     token:{
         type: String,
         required: true
@@ -12,5 +12,5 @@ const schema = new mongoose.Schema({
     }
 });
 
-const ExpToken = mongoose.model('ExpToken', schema);
-module.exports = ExpToken;
+const BlackListedToken = mongoose.model('ExpToken', ExpTokenSchema);
+module.exports = BlackListedToken;

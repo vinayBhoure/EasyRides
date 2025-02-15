@@ -56,7 +56,7 @@ const loginUser = asyncError(async (req, res) => {
     if (!user) {
         return res.status(400).json({
             success: 'false',
-            message: 'Invalid credentials'
+            message: 'User Does not Exist'
         });
     }
 
@@ -84,14 +84,22 @@ const getUserProfile = asyncError(async (req, res) => {
     });
 });
 
-const logoutUser = asyncError(async ( req, res) => {
+const logoutUser = asyncError(async (req, res) => {
     const token = req.headers.authorization.split(" ")[1];
-    const expToken = await BlackListedToken.create({token});
+    const expToken = await BlackListedToken.create({ token });
 
     res.status(200).json({
         success: true,
-        message:'Successfully Logut'
+        message: 'Successfully Logut'
     })
 })
 
-module.exports = { registerUser, loginUser, getUserProfile, logoutUser };
+const terminateUser = asyncError(async (req, res) => {
+    await UserModel.deleteOne({ _id: req.user._id });
+    res.status(200).json({
+        success: true,
+        message: 'User deleted succesfully'
+    })
+});
+
+module.exports = { registerUser, loginUser, getUserProfile, logoutUser, terminateUser };
