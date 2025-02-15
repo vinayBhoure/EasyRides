@@ -17,6 +17,9 @@ app.get('/', (req, res) => {
 const userRoute = require('./routes/userRoute');
 app.use('/api/v1/users', userRoute);
 
+const captainRoute = require('./routes/captainRoute');
+app.use('/api/v1/captains', captainRoute);
+
 app.use(globalCatch);
 
 app.listen(port, () => {
