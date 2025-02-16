@@ -37,7 +37,7 @@ const captainSchema = new mongoose.Schema({
         enum: ['inactive', 'active'],
         default: 'inactive'
     },
-    vehicel: {
+    vehicle: {
         color: {
             type: String,
             required: true,
@@ -47,12 +47,7 @@ const captainSchema = new mongoose.Schema({
             type: String,
             required: true,
             unique: true,
-            validate: {
-                validator: function (v) {
-                    return v.length === 10;
-                },
-                message: 'Invalid number: number plate must be exactly 10 characters'
-            }
+            minlength:[10, 'atleast 10 character']
         },
         capacity: {
             type: Number,

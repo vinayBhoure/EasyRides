@@ -21,7 +21,7 @@ const registerCaptain = asyncError(async (req, res) => {
         }
     } = req.body;
 
-    if (!fullname || !password || !email || !socketId ||
+    if (!fullname || !password || !email ||
         !color || !number_plate || !capacity || !type) {
         return res.status(500).json({
             success: false,
@@ -42,7 +42,7 @@ const registerCaptain = asyncError(async (req, res) => {
     const newCaptain = new CaptainModel({
         fullname,
         email,
-        password: hasedPassword,
+        password: hashedPassword,
         status,
         vehicle: {
             color,
@@ -55,6 +55,8 @@ const registerCaptain = asyncError(async (req, res) => {
             longitude
         }
     })
+
+    await newCaptain.save();
 
     const token = await newCaptain.generateToken();
     res.status(400).json({
@@ -104,12 +106,12 @@ const loginCaptain = asyncError(async (req, res) => {
 const getCaptainProfile = asyncError(async (req, res) => {
     res.status(200).json({
         success: true,
-        user: req.user
+        user: req.captain
     })
 });
 const logoutCaptain = asyncError(async (req, res) => {
     const token = req.headers.authorization.split(" ")[1];
-    const expToken = await BlackListedToken.findOne({ token: token });
+    const expToken = await BlackListedToken.create({token:token})
     res.status(200).json({
         success: true,
         message: 'logged out'
@@ -117,10 +119,10 @@ const logoutCaptain = asyncError(async (req, res) => {
 });
 
 const terminateCaptain = asyncError(async (req, res) => {
-    await CaptainModel.deleteOne({ _id: req.user._id });
+    await CaptainModel.deleteOne({ _id: req.captain._id });
     res.status(200).json({
-        success:true,
-        message:'Captain deleted succesfully'
+        success: true,
+        message: 'Captain deleted succesfully'
     })
 });
 
