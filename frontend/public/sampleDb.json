@@ -1,0 +1,22 @@
+{
+    "User": [
+        {
+            "fullname": {
+                "firstname": "vinay",
+                "lastname": "bhoure"
+            },
+            "email": "vinaybhoure@gmail.com",
+            "password": "12345678"
+        }
+    ],
+    "Captain": [
+        {
+            "fullname": {
+                "firstname": "vinay",
+                "lastname": "bhoure"
+            },
+            "email": "vinaybhoure@gmail.com",
+            "password": "12345678"
+        }
+    ]
+}
