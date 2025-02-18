@@ -1,9 +1,15 @@
 import React, { useState } from 'react'
 import Uberpng from '../assets/pngegg.png'
-import { NavLink } from 'react-router'
+import { NavLink, useNavigate } from 'react-router'
+import { useDispatch } from 'react-redux';
+import { useLoginUserMutation } from '../redux/api/userAPI';
+import { userExist } from '../redux/reducer/userReducer'
 
 export default function UserLogin() {
 
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const [loginUser] = useLoginUserMutation();
     const [userLoginInfo, setUserLoginInfo] = useState({
         userEmail: '',
         userPassword: '',
@@ -16,13 +22,35 @@ export default function UserLogin() {
         })
     }
 
-    const submitHandler = (e) => {
+    const submitHandler = async (e) => {
         e.preventDefault();
-        console.log('user information:', userLoginInfo)
-        setUserLoginInfo({
-            userEmail: '',
-            userPassword: ''
-        })
+        try {
+
+            const User = {
+                fullname: {
+                    firstname: userLoginInfo.firstname,
+                    lastname: userLoginInfo.lastname
+                },
+                email: userLoginInfo.userEmail,
+                password: userLoginInfo.userPassword
+            }
+
+            const res = await loginUser(User);
+            dispatch(userExist({
+                user: res.data.user,
+                token: res.data.token,
+            }))
+
+
+            setUserLoginInfo({
+                userEmail: '',
+                userPassword: ''
+            })
+            navigate('/')
+        } catch (err) {
+            console.log(err)
+        }
+
     }
 
     return (

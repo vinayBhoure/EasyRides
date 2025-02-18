@@ -1,10 +1,16 @@
 import React from 'react'
 import Uberpng from '../assets/pngegg.png'
-import { NavLink } from 'react-router'
+import { NavLink, useNavigate } from 'react-router'
 import { useState } from 'react';
+import { useRegisterUserMutation } from '../redux/api/userAPI';
+import { useDispatch } from 'react-redux';
+import { userExist } from '../redux/reducer/userReducer'
 
 function UserSignUp() {
 
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [registerUser] = useRegisterUserMutation();
   const [userSignUpInfo, setUserSignUpInfo] = useState({
     firstname: '',
     lastname: '',
@@ -20,22 +26,42 @@ function UserSignUp() {
     })
   }
 
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
+    try {
 
-    if (userSignUpInfo.userPassword !== userSignUpInfo.confirmPassword) {
-      alert('Please enter the same password');
-      return
+      if (userSignUpInfo.userPassword !== userSignUpInfo.confirmPassword) {
+        alert('Please enter the same password');
+        return
+      }
+
+      const newUser = {
+        fullname: {
+          firstname: userSignUpInfo.firstname,
+          lastname: userSignUpInfo.lastname
+        },
+        email: userSignUpInfo.userEmail,
+        password: userSignUpInfo.userPassword
+      }
+
+      const res = await registerUser(newUser).unwrap();
+      dispatch(userExist({
+        user: res.data.user,
+        token: res.data.token,
+      }))
+
+      setUserSignUpInfo({
+        firstname: '',
+        lastname: '',
+        userEmail: '',
+        userPassword: '',
+        confirmPassword: ''
+      })
+
+      navigate('/')
+    } catch (err) {
+      console.log('error while posting user information', err);
     }
-    console.log('user information:', userSignUpInfo)
-
-    setUserSignUpInfo({
-      firstname: '',
-      lastname: '',
-      userEmail: '',
-      userPassword: '',
-      confirmPassword: ''
-    })
   }
 
   return (
