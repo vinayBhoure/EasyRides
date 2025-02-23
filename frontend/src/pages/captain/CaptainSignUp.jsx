@@ -1,16 +1,28 @@
 import React from 'react'
-import Uberpng from '../assets/pngegg.png'
-import { NavLink } from 'react-router'
+import Uberpng from '../../assets/pngegg.png'
+import { NavLink, useNavigate } from 'react-router'
 import { useState } from 'react'
+import { useRegisterCaptainMutation } from '../../redux/api/captainAPI'
+import { useDispatch } from 'react-redux'
+import { captainExist } from '../../redux/reducer/captainReducer'
+import toast from 'react-hot-toast'
 
 function CaptainSignUp() {
+
+  const [registerCaptain, { isLoading, isError }] = useRegisterCaptainMutation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [captainSignUpInfo, setCaptainSignUpInfo] = useState({
     firstname: '',
     lastname: '',
     captainEmail: '',
     captainPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    vehicleColor: "",
+    capacity: "",
+    vehicleNumber: "",
+    vehicleType: ""
   });
 
   const changeHandler = (e) => {
@@ -20,22 +32,59 @@ function CaptainSignUp() {
     })
   }
 
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
 
-    if (captainSignUpInfo.userPassword !== captainSignUpInfo.confirmPassword) {
+    if (captainSignUpInfo.captainPassword !== captainSignUpInfo.confirmPassword) {
       alert('Please enter the same password');
       return
     }
-    console.log('user information:', captainSignUpInfo)
+    try {
+      const newCaptain = {
+        fullname: {
+          firstname: captainSignUpInfo.firstname,
+          lastname: captainSignUpInfo.lastname
+        },
+        email: captainSignUpInfo.captainEmail,
+        password: captainSignUpInfo.captainPassword,
+        vehicle: {
+          color: captainSignUpInfo.vehicleColor,
+          number_plate: captainSignUpInfo.vehicleNumber,
+          capacity: captainSignUpInfo.capacity,
+          type: captainSignUpInfo.vehicleType
+        },
+        location: {
+          latitude: null,
+          longitude: null,
+        }
+      }
+      const res = await registerCaptain(newCaptain);
 
-    setCaptainSignUpInfo({
-      firstname: '',
-      lastname: '',
-      captainEmail: '',
-      captainPassword: '',
-      confirmPassword: ''
-    })
+      if (res.success === "true") {
+        dispatch(captainExist({
+          captain: res.newCaptain,
+          token: res.token
+        }))
+        localStorage.setItem('tokenC', res.token)
+        setCaptainSignUpInfo({
+          firstname: '',
+          lastname: '',
+          captainEmail: '',
+          captainPassword: '',
+          confirmPassword: '',
+          vehicleColor: "",
+          capacity: "",
+          vehicleNumber: "",
+          vehicleType: ""
+        })
+        toast.success('Captain registered successfully')
+        navigate('/captain/home')
+      } else {
+        console.log('login failed');
+      }
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   return (
@@ -94,7 +143,7 @@ function CaptainSignUp() {
 
           <input
             required
-            name='firtname'
+            name='captainPassword'
             value={captainSignUpInfo.captainPassword}
             onChange={(e) => changeHandler(e)}
             type='password'
@@ -119,34 +168,41 @@ function CaptainSignUp() {
           <h3 className='text-xl mb-2 font-medium'>Vehicle Details</h3>
 
           <div className='flex gap-7 mb-7'>
-            <div className=''>
+            <div className='w-full'>
 
               <p className='mb-2'>Color</p>
 
               <select
                 required
-                defaultValue={''}
+                name='vehicleColor'
+                value={captainSignUpInfo.vehicleColor}
+                onChange={(e) => changeHandler(e)}
                 className='bg-[#eee] py-2 px-4 w-full rounded border border-gray-300 text-lg placeholder:text-base
                             focus:ring focus:ring-blue-300 focus:border-transparent'>
+                <option value={""} disabled className='text-xs font-semibold' >--Select--</option>
                 {
-                  ['Red', 'Blue', 'Green', 'Black'].map((color, idx) => {
-                    return <option key={idx} className='text-xs font-semibold' value={color}>{color}</option>
+                  ['red', 'blue', 'green', 'black'].map((color, idx) => {
+                    const capitalized = color.charAt(0).toUpperCase() + color.slice(1);
+                    return <option key={idx} className='text-xs font-semibold' value={color}>{capitalized}</option>
                   })
                 }
               </select>
 
             </div>
 
-            <div className='basis-1/2'>
+            <div className='w-full'>
 
               <p className='mb-2'>Capcity</p>
 
               <select
                 required
-                defaultValue={''}
+                name='capacity'
+                value={captainSignUpInfo.capacity}
+                onChange={(e) => changeHandler(e)}
                 className='bg-[#eee] py-2 px-4 w-full rounded border border-gray-300 text-lg placeholder:text-base
                             focus:ring focus:ring-blue-300 focus:border-transparent'
               >
+                <option value={""} disabled className='text-xs font-semibold' >--Select--</option>
                 {
                   [1, 2, 3, 4, 5, 7].map((item, idx) => {
                     return <option key={idx} className='text-xs font-semibold' value={item}>{item}</option>
@@ -157,29 +213,35 @@ function CaptainSignUp() {
             </div>
           </div>
           <div className='flex gap-7 mb-7'>
-            <div>
+            <div className='w-full'>
 
               <p className='mb-2'>Vehicle No.</p>
               <input
                 required
-                type=''
+                type='text'
+                name='vehicleNumber'
+                value={captainSignUpInfo.vehicleNumber}
+                onChange={(e) => changeHandler(e)}
                 placeholder='AB-00-CD-1893'
                 className='bg-[#eee] py-2 px-4 w-full rounded border border-gray-300 text-lg placeholder:text-base
                       focus:ring focus:ring-blue-300 focus:border-transparent'
               ></input>
             </div>
-            <div className='basis-1/3'>
-              <p className='mb-2'>Type.</p>
+            <div className='w-full'>
+              <p className='mb-2'>Type</p>
               <select
                 required
-                defaultValue={''}
+                name='vehicleType'
+                value={captainSignUpInfo.vehicleType}
+                onChange={(e) => changeHandler(e)}
                 className='bg-[#eee] py-2 px-4 w-full rounded border border-gray-300 text-lg placeholder:text-base
                       focus:ring focus:ring-blue-300 focus:border-transparent'
               >
-
+                <option value={""} disabled className='text-xs font-semibold' >--Select--</option>
                 {
-                  ['Auto', 'Car', 'Bike'].map((item, idx) => {
-                    return <option key={idx} className='text-xs font-semibold' value={item}>{item}</option>
+                  ['auto', 'car', 'bike'].map((item, idx) => {
+                    const capitalized = item.charAt(0).toUpperCase() + item.slice(1);
+                    return <option key={idx} className='text-xs font-semibold' value={item}>{capitalized}</option>
                   })
                 }
               </select>
@@ -196,7 +258,7 @@ function CaptainSignUp() {
         </form>
         <p className='text-lg '>Already have account?
           <NavLink
-            to={'/user/login'}
+            to={'/captain/login'}
             className='ml-1 text-blue-500 font-medium active:text-blue-700'
           >
             Login here

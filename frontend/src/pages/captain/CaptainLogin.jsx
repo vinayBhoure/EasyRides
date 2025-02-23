@@ -1,9 +1,17 @@
 import React from 'react'
-import Uberpng from '../assets/pngegg.png'
-import { NavLink } from 'react-router'
+import Uberpng from '../../assets/pngegg.png'
+import { NavLink, useNavigate } from 'react-router'
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useLoginCaptainMutation } from '../../redux/api/captainAPI'
+import { captainExist } from '../../redux/reducer/captainReducer'
+import toast from 'react-hot-toast'
 
 function CaptainLogin() {
+
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const [loginCaptain, { isLoading, isError }] = useLoginCaptainMutation();
 
     const [captainLoginInfo, setCaptainLoginInfo] = useState({
         captainEmail: '',
@@ -17,13 +25,31 @@ function CaptainLogin() {
         })
     }
 
-    const submitHandler = (e) => {
+    const submitHandler = async (e) => {
         e.preventDefault();
-        console.log('user information:', captainLoginInfo)
-        setCaptainLoginInfo({
-            captainEmail: '',
-            captainPassword: ''
-        })
+
+        try {
+            const res = await loginCaptain({
+                email: captainLoginInfo.captainEmail,
+                password: captainLoginInfo.captainEmail
+            })
+
+
+            dispatch(captainExist({
+                captain: res.captain,
+                token: res.token
+            }))
+            localStorage.setItem('tokeknC', res.token)
+            setCaptainLoginInfo({
+                captainEmail: '',
+                captainPassword: ''
+            })
+            toast.success('captain login successfully')
+            navigate('/captain/home')
+
+        } catch (err) {
+            console.log(err);
+        }
     }
 
     return (
