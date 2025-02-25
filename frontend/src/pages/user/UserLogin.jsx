@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import Uberpng from '../assets/pngegg.png'
+import Uberpng from '../../assets/pngegg.png'
 import { NavLink, useNavigate } from 'react-router'
 import { useDispatch } from 'react-redux';
-import { useLoginUserMutation } from '../redux/api/userAPI';
-import { userExist } from '../redux/reducer/userReducer'
+import { useLoginUserMutation } from '../../redux/api/userAPI';
+import { userExist } from '../../redux/reducer/userReducer'
+import toast from 'react-hot-toast';
 
 export default function UserLogin() {
 
@@ -37,16 +38,17 @@ export default function UserLogin() {
 
             const res = await loginUser(User);
             dispatch(userExist({
-                user: res.data.user,
-                token: res.data.token,
+                user: res.user,
+                token: res.token,
             }))
-
+            localStorage.setItem('tokenU', res.token)
 
             setUserLoginInfo({
                 userEmail: '',
                 userPassword: ''
             })
-            navigate('/')
+            toast.success('User Logged In successfully !!!')
+            navigate('/user/home')
         } catch (err) {
             console.log(err)
         }

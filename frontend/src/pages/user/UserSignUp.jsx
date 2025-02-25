@@ -1,10 +1,11 @@
 import React from 'react'
-import Uberpng from '../assets/pngegg.png'
+import Uberpng from '../../assets/pngegg.png'
 import { NavLink, useNavigate } from 'react-router'
 import { useState } from 'react';
-import { useRegisterUserMutation } from '../redux/api/userAPI';
+import { useRegisterUserMutation } from '../../redux/api/userAPI';
 import { useDispatch } from 'react-redux';
-import { userExist } from '../redux/reducer/userReducer'
+import { userExist } from '../../redux/reducer/userReducer'
+import toast from 'react-hot-toast';
 
 function UserSignUp() {
 
@@ -45,22 +46,27 @@ function UserSignUp() {
       }
 
       const res = await registerUser(newUser).unwrap();
-      dispatch(userExist({
-        user: res.data.user,
-        token: res.data.token,
-      }))
+      if (res.success === "true") {
+        dispatch(userExist({
+          user: res.newUser,
+          token: res.token,
+        }))
+        localStorage.setItem('tokenU', res.token)
 
-      setUserSignUpInfo({
-        firstname: '',
-        lastname: '',
-        userEmail: '',
-        userPassword: '',
-        confirmPassword: ''
-      })
-
-      navigate('/')
+        setUserSignUpInfo({
+          firstname: '',
+          lastname: '',
+          userEmail: '',
+          userPassword: '',
+          confirmPassword: ''
+        })
+        toast.success('user registered successfully')
+        navigate('/user/home')
+      } else {
+        console.log('login failed');
+      }
     } catch (err) {
-      console.log('error while posting user information', err);
+      console.log('error while posting user information:', err);
     }
   }
 
