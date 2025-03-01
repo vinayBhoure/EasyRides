@@ -2,16 +2,16 @@ import gsap from 'gsap'
 import { useGSAP } from '@gsap/react';
 import React, { useRef, useState } from 'react'
 
-import LocationComponent from '../../components/LocationComponent';
-import VehicleComponent from '../../components/VehicleComponent';
-import SearchingDriverComponent from '../../components/SearchingDriverComponent';
+import LocationComponent from '../../components/user/LocationComponent';
+import VehicleComponent from '../../components/user/VehicleComponent';
+import SearchingDriverComponent from '../../components/user/SearchingDriverComponent';
+import ConfirmRide from '../../components/user/ConfirmRide';
 
 import { MdTimer } from "react-icons/md";
 import { MdKeyboardArrowDown } from "react-icons/md";
 
 import Uberpng from '../../assets/pngegg.png'
 import Map from '../../assets/map.jpg'
-import ConfirmRide from '../../components/ConfirmRide';
 
 
 
@@ -183,7 +183,10 @@ function UserHome() {
       {/* Driver Searching */}
       <div ref={searchingDriverRef}
         className='fixed translate-y-full bottom-0 bg-white rounded-t-3xl  w-screen'>
-        <SearchingDriverComponent setSearchingDriver={setSearchingDriver} setConfirmRide={setConfirmRide} />
+        <SearchingDriverComponent 
+        setSearchingDriver={setSearchingDriver} 
+        setConfirmRide={setConfirmRide}
+        searchingDriver={searchingDriver} />
       </div>
 
       {/* Confirm Ride  */}
