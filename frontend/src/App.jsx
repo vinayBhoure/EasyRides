@@ -13,7 +13,7 @@ import { RecoilRoot } from 'recoil';
 
 const App = () => {
   return (
-    <div className=''>
+    <div className='w-screen h-screen sm:w-sm sm:mx-auto sm:border-3 sm:rounded-2xl sm:overflow-hidden '>
       <Routes>
         <Route path='/' element={<Start />} />
         <Route path='/user/login' element={<UserLogin />} />
