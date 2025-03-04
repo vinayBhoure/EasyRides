@@ -4,11 +4,12 @@ const globalCatch = require('./middlewares/globalCatch');
 
 const express = require('express');
 const app = express();
-const port = process.env.PORT ||  3000;
+const port = process.env.PORT || 3000;
 const cors = require('cors');
 
 app.use(cors()); // to enable CORS
 app.use(express.json()); // to parse the incoming requests with JSON payloads
+app.use(express.urlencoded({extended: true}));
 
 app.get('/', (req, res) => {
     res.send('Welcome to the server!');
@@ -19,6 +20,9 @@ app.use('/api/v1/users', userRoute);
 
 const captainRoute = require('./routes/captainRoute');
 app.use('/api/v1/captains', captainRoute);
+
+const mapRoutes = require('./routes/mapRoutes');
+app.use('/api/v1/maps', mapRoutes);
 
 app.use(globalCatch);
 
