@@ -7,6 +7,7 @@ const getLocationCoordinates = asyncError(async (address) => {
     }
 
     const API_KEY = process.env.GOOGLE_MAP_API_KEY;
+    // console.log('api-key -> ', API_KEY)
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${API_KEY}`;
 
 
@@ -34,7 +35,7 @@ const getDistanceBetweenLocation = asyncError(async (from, to) => {
 
     const response = await fetch(url);
     const data = await response.json();
-    
+
 
     if (data.status === 'OK') {
         const element = data.rows[0].elements[0];
@@ -61,7 +62,7 @@ const getSuggestionsForAddress = asyncError(async (address) => {
 
     const API_KEY = process.env.GOOGLE_MAP_API_KEY;
     const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(address)}&key=${API_KEY}`;
-    
+
     const response = await fetch(url);
     const data = await response.json();
 
