@@ -9,7 +9,7 @@ const cors = require('cors');
 
 app.use(cors()); // to enable CORS
 app.use(express.json()); // to parse the incoming requests with JSON payloads
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
     res.send('Welcome to the server!');
@@ -23,6 +23,9 @@ app.use('/api/v1/captains', captainRoute);
 
 const mapRoutes = require('./routes/mapRoutes');
 app.use('/api/v1/maps', mapRoutes);
+
+const rideRoutes = require('./routes/rideRoutes');
+app.use('/api/v1/rides', rideRoutes);
 
 app.use(globalCatch);
 
