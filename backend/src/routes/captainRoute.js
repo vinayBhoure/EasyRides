@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const verifyCaptain  = require('../middlewares/verifyUser')
+const verifyCaptain  = require('../middlewares/verifyCaptain')
 
 const { registerCaptain, loginCaptain, getCaptainProfile, logoutCaptain, terminateCaptain } = require('../controllers/captainController')
 const { validateLogin } = require('../middlewares/validateZod')

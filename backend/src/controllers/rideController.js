@@ -2,7 +2,9 @@ const asyncError = require("../middlewares/asyncError");
 const createRideService = require("../utility/rideService");
 
 const createRide = asyncError(async (req, res) => {
-    const { user, pickup, destination, vehicleType } = req.body;
+
+    const user = req.user?._id;
+    const { pickup, destination, vehicleType } = req.body;
 
     const ride = await createRideService({ user, pickup, destination, vehicleType })
 
@@ -14,4 +16,4 @@ const createRide = asyncError(async (req, res) => {
 
 })
 
-module.exports = { createRide }
+module.exports = createRide;

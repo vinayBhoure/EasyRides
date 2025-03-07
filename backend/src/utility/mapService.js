@@ -25,13 +25,13 @@ const getLocationCoordinates = asyncError(async (address) => {
     }
 });
 
-const getDistanceBetweenLocation = asyncError(async (from, to) => {
-    if (!from || !to) {
+const getDistanceBetweenLocation = asyncError(async (origin, destination) => {
+    if (!origin || !destination) {
         throw new Error('Both origin and destination are required');
     }
 
     const API_KEY = process.env.GOOGLE_MAP_API_KEY;
-    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(from)}&destinations=${encodeURIComponent(to)}&key=${API_KEY}`;
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${API_KEY}`;
 
     const response = await fetch(url);
     const data = await response.json();

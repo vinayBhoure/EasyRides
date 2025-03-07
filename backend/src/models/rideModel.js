@@ -44,9 +44,9 @@ const RideSchema = new mongoose.Schema({
         type: String
     },
     otp: {
-        tyepe: Number,
-        select: false,
-        required: true
+        type: Number,
+        required: true,
+        select: false
     }
 });
 
