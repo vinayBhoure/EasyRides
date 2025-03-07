@@ -59,7 +59,7 @@ const registerCaptain = asyncError(async (req, res) => {
     await newCaptain.save();
 
     const token = await newCaptain.generateToken();
-    res.status(400).json({
+    res.status(200).json({
         success: true,
         message: 'captain successfully registered',
         newCaptain,
@@ -111,7 +111,7 @@ const getCaptainProfile = asyncError(async (req, res) => {
 });
 const logoutCaptain = asyncError(async (req, res) => {
     const token = req.headers.authorization.split(" ")[1];
-    const expToken = await BlackListedToken.create({token:token})
+    const expToken = await BlackListedToken.create({ token: token })
     res.status(200).json({
         success: true,
         message: 'logged out'

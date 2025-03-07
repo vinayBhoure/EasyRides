@@ -3,7 +3,7 @@ const RideModel = require("../models/rideModel");
 const { getDistanceBetweenLocation } = require("./mapService");
 const crypto = require('crypto');
 
-const getFareService = async (pickup, destination) => {
+const getFareService = (pickup, destination) => {
     if (!pickup || !destination) {
         throw new Error('provide destination and pickup')
     }
@@ -34,7 +34,7 @@ const getFareService = async (pickup, destination) => {
     const fare = {
         auto: Math.round(baseFare.auto + ((distance / 1000) * perKmRate.auto) + ((duration / 60) * perMinuteRate.auto)),
         car: Math.round(baseFare.car + ((distance / 1000) * perKmRate.car) + ((duration / 60) * perMinuteRate.car)),
-        bike: Math.round(baseFare.moto + ((distance / 1000) * perKmRate.moto) + ((duration / 60) * perMinuteRate.moto))
+        bike: Math.round(baseFare.bike + ((distance / 1000) * perKmRate.bike) + ((duration / 60) * perMinuteRate.bike))
     };
 
 
@@ -54,10 +54,10 @@ const createRideService = asyncError(async ({
         throw new Error('provide all the inputs')
     }
 
-    const fare = await getFareService(pickup, destination);
+    const fare = getFareService(pickup, destination);
 
     console.log(fare);
-    const ride = RideModel.create({
+    const ride = await RideModel.create({
         user,
         pickup,
         destination,

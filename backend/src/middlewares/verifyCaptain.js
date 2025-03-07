@@ -1,14 +1,11 @@
-const jwt = require('jsonwebtoken');
-const UserModel = require('../models/User');
-const asyncError = require('./asyncError');
-const BlackListedToken = require('../models/BlackListedToken');
-const captainModel = require('../models/captainModel');
+const asyncError = require("./asyncError");
 
-const verifyUser = asyncError(async (req, res, next) => {
+
+const verifyCapitain = asyncError(async (req, res, next) => {
     if (!req.headers.authorization) {
         return res.status(401).json({
             success: false,
-            message: 'User is not logged in.'
+            message: 'captain ---- is not logged in.'
         });
     }
 
@@ -31,10 +28,10 @@ const verifyUser = asyncError(async (req, res, next) => {
         });
     }
 
-    const user = await UserModel.findById(decoded._id);
-    req.user = user;
+    const captain = await captainModel.findById(decoded._id);
+    req.captain = captain;
     next();
 
 })
 
-module.exports = verifyUser
+module.exports = verifyCapitain
