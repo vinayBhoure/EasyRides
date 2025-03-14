@@ -1,6 +1,6 @@
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react';
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 
 import LocationComponent from '../../components/user/LocationComponent';
 import VehicleComponent from '../../components/user/VehicleComponent';
@@ -12,10 +12,23 @@ import { MdKeyboardArrowDown } from "react-icons/md";
 
 import Uberpng from '../../assets/pngegg.png'
 import Map from '../../assets/map.jpg'
-
-
+import { useNavigate } from 'react-router';
+import { useDispatch } from 'react-redux';
+import { useGetUserProfileQuery } from '../../redux/api/userAPI';
+import { userExist } from '../../redux/reducer/userReducer'
 
 function UserHome() {
+
+  // const navigate = useNavigate();
+  // const dispatch = useDispatch();
+
+  // // Get token from localStorage
+  // const userToken = localStorage.getItem('tokenU');
+
+  // // Fetch user profile if token exists
+  // const { data: userProfile, isLoading, isError } = useGetUserProfileQuery(undefined, {
+  //   skip: !userToken
+  // });
 
   const vehiclePanelOpenRef = useRef(null)
   const [vehiclePanelOpen, setVehiclePanelOpen] = useState(false);
@@ -29,6 +42,46 @@ function UserHome() {
 
   const confirmRideRef = useRef(null);
   const [confirmRide, setConfirmRide] = useState(false);
+
+  const [address, setAddress] = useState({
+    pickup: '',
+    destination: ''
+  });
+
+  const [selectOption, setSelectOption] = useState();
+
+  const [activeInput, setActiveInput] = useState(null);
+
+  // const loadUser = () => {
+  //   // If no token exists, redirect to start page
+  //   if (!userToken) {
+  //     navigate('/');
+  //     return;
+  //   }
+  //   // Update Redux store with user data if profile fetch successful
+  //   if (userProfile) {
+  //     dispatch(userExist({
+  //       token: userToken,
+  //       user: userProfile.user,
+  //       isAuthenticated: true
+  //     }));
+  //   }
+
+  //   // Handle error case (invalid token, etc)
+  //   if (isError) {
+  //     localStorage.removeItem('tokenU');
+  //     navigate('/');
+  //   }
+  // }
+
+  // useEffect(() => {
+  //   loadUser();
+  // }, [userProfile, isError, navigate, dispatch]);
+
+  // // Show loading state while fetching profile
+  // if (isLoading) {
+  //   return <div>Loading...</div>;
+  // }
 
   useGSAP(() => {
     // Animate location panel container if it exists
@@ -85,26 +138,24 @@ function UserHome() {
     }
   }, [confirmRide])
 
-
-
-  const [address, setAddress] = useState({
-    pickup: '',
-    destination: ''
-  });
-
-
   const changeHandler = (e) => {
     setAddress((prev) => ({
       ...prev,
       [e.target.name]: e.target.value
-    }))
+    }));
+    setActiveInput(e.target.name);
   }
-
-  const [selectOption, setSelectOption] = useState();
 
   const submitHandler = (e) => {
     e.preventDefault();
+    if (address.pickup && address.destination) {
+      setLocationPanelOpen(false);
+      setVehiclePanelOpen(true);
+    } else {
+      alert("Please fill both pickup and destination fields.");
+    }
   }
+
   return (
     <div className='h-screen w-screen relative overflow-hidden'>
       <img
@@ -147,6 +198,7 @@ function UserHome() {
               placeholder='Enter your destination'
               className='bg-[#eee] text-base py-2 px-8 rounded-lg w-full mt-3'
             />
+            <button type="submit" disabled={!address.pickup || !address.destination} className={`bg-neutral-500 w-full text-lg font-semibold rounded-lg py-1 mt-3 disabled:cursor-not-allowed disabled:bg-neutral-400`}>Search</button>
           </form>
           <span className='flex items-center gap-1 font-semibold text-lg w-max bg-[#eee] px-4 py-2 mt-3 rounded-full '>
             <MdTimer size={'1.25rem'} />
@@ -163,9 +215,11 @@ function UserHome() {
         `}>
           <LocationComponent
             pickup={address.pickup}
+            destination={address.destination}
+            activeInput={activeInput}
+            setAddress={setAddress}
             setLocationPanelOpenFunc={setLocationPanelOpen}
             setVehiclePanelOpenFunc={setVehiclePanelOpen}
-
           />
         </div>
       </div>
@@ -183,10 +237,10 @@ function UserHome() {
       {/* Driver Searching */}
       <div ref={searchingDriverRef}
         className='fixed translate-y-full bottom-0 bg-white rounded-t-3xl  w-screen'>
-        <SearchingDriverComponent 
-        setSearchingDriver={setSearchingDriver} 
-        setConfirmRide={setConfirmRide}
-        searchingDriver={searchingDriver} />
+        <SearchingDriverComponent
+          setSearchingDriver={setSearchingDriver}
+          setConfirmRide={setConfirmRide}
+          searchingDriver={searchingDriver} />
       </div>
 
       {/* Confirm Ride  */}

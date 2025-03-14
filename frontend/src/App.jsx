@@ -1,6 +1,6 @@
 import './App.css'
-import React from 'react'
-import { Routes, Route } from "react-router-dom";
+import React, { useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Start from './pages/Start'
 import UserLogin from './pages/user/UserLogin';
 import UserSignUp from './pages/user/UserSignUp';
@@ -9,23 +9,39 @@ import CaptainLogin from './pages/captain/CaptainLogin';
 import ProtectRoutes from './components/ProtectRoutes'
 import CaptainHome from './pages/captain/CaptainHome';
 import UserHome from './pages/user/UserHome';
+import Test from './pages/Test';
+import { useDispatch } from 'react-redux';
+import { useGetUserProfileQuery } from './redux/api/userAPI';
+import { Provider } from 'react-redux';
 import { RecoilRoot } from 'recoil';
+import store from './redux/store';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const App = () => {
+
   return (
-    <div className='w-screen h-screen sm:w-sm sm:mx-auto sm:border-3 sm:rounded-2xl sm:overflow-hidden '>
-      <Routes>
-        <Route path='/' element={<Start />} />
-        <Route path='/user/login' element={<UserLogin />} />
-        <Route path='/user/register' element={<UserSignUp />} />
-        <Route path='/captain/login' element={<CaptainLogin />} />
-        <Route path='/captain/register' element={<CaptainSignUp />} />
-
-        <Route path='/user/home' element={<UserHome />} />
-        <Route path='/captain/home' element={<CaptainHome />} />
-
-      </Routes>
-    </div>
+    <Provider store={store}>
+      <RecoilRoot>
+        <Router>
+          <div>
+            <Routes>
+              <Route path='/' element={<Start />} />
+              <Route path='/user/login' element={<UserLogin />} />
+              <Route path='/user/register' element={<UserSignUp />} />
+              <Route path='/captain/login' element={<CaptainLogin />} />
+              <Route path='/captain/register' element={<CaptainSignUp />} />
+              <Route path='/user/home' element={
+                <ErrorBoundary>
+                  <UserHome />
+                </ErrorBoundary>
+              } />
+              <Route path='/captain/home' element={<CaptainHome />} />
+              <Route path='/test' element={<Test />} />
+            </Routes>
+          </div>
+        </Router>
+      </RecoilRoot>
+    </Provider>
   )
 }
 

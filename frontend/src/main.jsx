@@ -10,13 +10,13 @@ import { RecoilRoot } from 'recoil'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter >
-      <Provider store={store} >
-        <RecoilRoot>
+    {/* <BrowserRouter > */}
+      {/* <Provider store={store} > */}
+        {/* <RecoilRoot> */}
           <App />
-        </RecoilRoot>
+        {/* </RecoilRoot> */}
         <Toaster />
-      </Provider>
-    </BrowserRouter>
+      {/* </Provider> */}
+    {/* </BrowserRouter> */}
   </StrictMode>,
 )

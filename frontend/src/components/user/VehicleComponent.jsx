@@ -17,10 +17,9 @@ function VehicleComponent({ setVehiclePaneOpen, setSearchingDriver }) {
             <RideDetail name={'UberGo'} setSelectRide={setSelectRide} imgSrc={Car} price={'150.75'} service={'UberGo'} capacity={4} />
             <RideDetail name={'Moto'} setSelectRide={setSelectRide} imgSrc={Moto} price={'49.3'} service={'Moto'} capacity={1} />
             <RideDetail name={'Auto'} setSelectRide={setSelectRide} imgSrc={Auto} price={'120.9'} service={'Auto'} capacity={3} />
-            <RideDetail name={'Premier'} setSelectRide={setSelectRide} imgSrc={BlackCar} price={'200.00'} service={'Premier'} capacity={4} />
-            <div className='border-t text-2xl'>
-                <div className='flex justify-between items-center'>
-                    <h3 className='flex items-center'> <FaMoneyBill className='mr-2' color='green' size={'1.5rem'} /> Cash</h3>                <MdKeyboardArrowRight />
+            <div className='text-2xl mt-5'>
+                <div className='flex justify-between items-center mb-5 border rounded p-2 bg-neutral-200'>
+                    <h3 className='flex items-center'> <FaMoneyBill className='mr-2' color='green' size={'2rem'} /> Cash</h3>                <MdKeyboardArrowRight />
                 </div>
                 <button
                     disabled={selectRide.length ? false : true}

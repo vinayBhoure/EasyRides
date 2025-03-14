@@ -1,13 +1,13 @@
 const asyncError = require('../middlewares/asyncError')
 
-const getLocationCoordinates = asyncError(async (address) => {
+const getLocationCoordinates = async (address) => {
     // Validate input
     if (!address) {
         throw new Error('Address is required');
     }
 
     const API_KEY = process.env.GOOGLE_MAP_API_KEY;
-    // console.log('api-key -> ', API_KEY)
+    
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${API_KEY}`;
 
 
@@ -23,9 +23,9 @@ const getLocationCoordinates = asyncError(async (address) => {
     } else {
         throw new Error(`Geocoding failed with status: ${data.status}`);
     }
-});
+};
 
-const getDistanceBetweenLocation = asyncError(async (origin, destination) => {
+const getDistanceBetweenLocation = async (origin, destination) => {
     if (!origin || !destination) {
         throw new Error('Both origin and destination are required');
     }
@@ -53,9 +53,9 @@ const getDistanceBetweenLocation = asyncError(async (origin, destination) => {
         throw new Error(`API request failed with status: ${data.status}`);
     }
 
-})
+}
 
-const getSuggestionsForAddress = asyncError(async (address) => {
+const getSuggestionsForAddress = async (address) => {
     if (!address) {
         throw new Error('Address input is required');
     }
@@ -65,16 +65,16 @@ const getSuggestionsForAddress = asyncError(async (address) => {
 
     const response = await fetch(url);
     const data = await response.json();
-
     if (data.status === 'OK' && data.predictions) {
-        return data.predictions.map(prediction => ({
+        const arr = data.predictions.map(prediction => ({
             description: prediction.description,
             placeId: prediction.place_id,
             mainText: prediction.structured_formatting?.main_text || '',
             secondaryText: prediction.structured_formatting?.secondary_text || ''
         }));
+        return arr;
     } else {
         throw new Error(`Failed to get suggestions: ${data.status}`);
     }
-});
+};
 module.exports = { getLocationCoordinates, getDistanceBetweenLocation, getSuggestionsForAddress };

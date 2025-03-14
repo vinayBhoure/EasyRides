@@ -38,10 +38,10 @@ export default function UserLogin() {
 
             const res = await loginUser(User);
             dispatch(userExist({
-                user: res.user,
-                token: res.token,
+                user: res.data.user,
+                token: res.data.token,
             }))
-            localStorage.setItem('tokenU', res.token)
+            localStorage.setItem('tokenU', res.data.token)
 
             setUserLoginInfo({
                 userEmail: '',

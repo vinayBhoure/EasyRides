@@ -1,39 +1,59 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaLocationDot } from "react-icons/fa6";
 import { FaBookmark } from "react-icons/fa";
+import { useGetSuggestionsQuery } from '../../redux/api/mapAPI';
 
+function LocationComponent({ pickup, destination, activeInput, setAddress, setLocationPanelOpenFunc, setVehiclePanelOpenFunc }) {
 
-function LocationComponent({ pickup, setLocationPanelOpenFunc, setVehiclePanelOpenFunc }) {
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const locationArr = [,
+    const { data: suggestions, isError, isLoading } = useGetSuggestionsQuery(searchTerm, {
+        skip: !searchTerm
+    });
 
-        '366, rishi palace colony, Near Hawa Bunglow, INdore, m.p. ',
-        '366, rishi palace colony, Near Hawa Bunglow, INdore, m.p. ',
-    ]
-
-    const clickHandler = () => {
-        if (pickup.length > 0) {
-            setLocationPanelOpenFunc(false);
-            setVehiclePanelOpenFunc(true);
+    useEffect(() => {
+        let timer;
+        if (activeInput === 'pickup') {
+            timer = setTimeout(() => {
+                setSearchTerm(pickup);
+            }, 500);
+        } else if (activeInput === 'destination') {
+            timer = setTimeout(() => {
+                setSearchTerm(destination);
+            }, 500);
         }
+
+        return () => {
+            clearTimeout(timer);
+        }
+    }, [pickup, destination, activeInput]);
+
+    const clickHandler = (suggestion) => {
+        setAddress((prev) => ({
+            ...prev,
+            [activeInput]: suggestion.mainText
+        }));
+        setLocationPanelOpenFunc(false);
     }
+
     return (
         <div className='flex flex-col justify-between h-full'>
             <div className=''>
-                {
-                    locationArr.map((item, idx) => {
-                        return (
-                            <div
-                                onClick={clickHandler}
-                                key={idx} className='flex justify-start border-2 border-transparent rounded-xl p-1 active:border-black items-center gap-4 mt-3'>
-                                <div className='bg-[#eee] p-3 rounded-xl'>
-                                    <FaLocationDot />
-                                </div>
-                                <h4 className=' text-lg'>{item}</h4>
-                            </div>
-                        )
-                    })
-                }
+                {isLoading && <p>Loading...</p>}
+                {isError && <p>Error loading suggestions</p>}
+                {suggestions && suggestions.suggestions.map((item, idx) => (
+                    <div
+                        onClick={() => clickHandler(item)}
+                        key={idx} className='flex justify-start border-2 border-transparent rounded-xl p-1 active:border-black items-center gap-4 mt-3'>
+                        <div className='bg-[#eee] p-3 rounded-xl'>
+                            <FaLocationDot />
+                        </div>
+                        <div>
+                            <h4 className='text-lg'>{item.mainText}</h4>
+                            <p className='text-sm text-gray-500'>{item.secondaryText}</p>
+                        </div>
+                    </div>
+                ))}
             </div>
             <div>
                 <div className='flex justify-start border-2 border-transparent rounded-xl p-1 active:border-black items-center gap-4 mt-3'>
