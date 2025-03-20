@@ -1,6 +1,7 @@
 require('dotenv').config();
 const connectDB = require('./config/connectDB');
 const globalCatch = require('./middlewares/globalCatch');
+const { initializeSocket } = require('./socket'); // Import the initializeSocket function
 
 const express = require('express');
 const app = express();
@@ -29,7 +30,15 @@ app.use('/api/v1/rides', rideRoutes);
 
 app.use(globalCatch);
 
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-})
-connectDB(); 
+connectDB().then(() => {
+    console.log('Database connected successfully.');
+
+    const server = app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
+    });
+
+    initializeSocket(server); // Initialize the socket with the server instance
+    console.log('Socket server initialized.');
+}).catch((err) => {
+    console.error('Database connection failed:', err);
+});

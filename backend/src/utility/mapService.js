@@ -3,11 +3,14 @@ const asyncError = require('../middlewares/asyncError')
 const getLocationCoordinates = async (address) => {
     // Validate input
     if (!address) {
-        throw new Error('Address is required');
+        return {
+            success: false,
+            error: 'Address is required'
+        }
     }
 
     const API_KEY = process.env.GOOGLE_MAP_API_KEY;
-    
+
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${API_KEY}`;
 
 
@@ -17,17 +20,26 @@ const getLocationCoordinates = async (address) => {
     if (data.status === 'OK' && data.results && data.results.length > 0) {
         const location = data.results[0].geometry.location;
         return {
-            latitude: location.lat,
-            longitude: location.lng
+            success: true,
+            data: {
+                latitude: location.lat,
+                longitude: location.lng
+            }
         };
     } else {
-        throw new Error(`Geocoding failed with status: ${data.status}`);
+        return {
+            success: false,
+            error: `Geocoding failed with status: ${data.status}`
+        }
     }
 };
 
 const getDistanceBetweenLocation = async (origin, destination) => {
     if (!origin || !destination) {
-        throw new Error('Both origin and destination are required');
+        return {
+            success: false,
+            error: 'Origin and destination are required'
+        }
     }
 
     const API_KEY = process.env.GOOGLE_MAP_API_KEY;
@@ -41,23 +53,38 @@ const getDistanceBetweenLocation = async (origin, destination) => {
         const element = data.rows[0].elements[0];
         if (element.status === 'OK') {
             return {
-                distance: element.distance.text,
-                duration: element.duration.text
+                success: true,
+                data: {
+                    distance: element.distance.text,
+                    duration: element.duration.text
+                }
             };
         } else if (element.status === 'ZERO_RESULTS') {
-            throw new Error('No route found between origin and destination');
+            return {
+                success: false,
+                error: 'No route found'
+            };
         } else {
-            throw new Error(`Route calculation failed with status: ${element.status}`);
+            return {
+                success: false,
+                error: 'Failed to get distance'
+            }
         }
     } else {
-        throw new Error(`API request failed with status: ${data.status}`);
+        return {
+            success: false,
+            error: `API request failed with status: ${data.status}`
+        }
     }
 
 }
 
 const getSuggestionsForAddress = async (address) => {
     if (!address) {
-        throw new Error('Address input is required');
+        return {
+            success: false,
+            error: 'Address is required'
+        }
     }
 
     const API_KEY = process.env.GOOGLE_MAP_API_KEY;
@@ -72,9 +99,15 @@ const getSuggestionsForAddress = async (address) => {
             mainText: prediction.structured_formatting?.main_text || '',
             secondaryText: prediction.structured_formatting?.secondary_text || ''
         }));
-        return arr;
+        return {
+            success: true,
+            data: arr
+        };
     } else {
-        throw new Error(`Failed to get suggestions: ${data.status}`);
+        return {
+            success: false,
+            error: `Failed to get suggestions: ${data.status}`
+        }
     }
 };
 module.exports = { getLocationCoordinates, getDistanceBetweenLocation, getSuggestionsForAddress };

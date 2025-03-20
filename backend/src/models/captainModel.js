@@ -47,7 +47,7 @@ const captainSchema = new mongoose.Schema({
             type: String,
             required: true,
             unique: true,
-            minlength:[10, 'atleast 10 character']
+            minlength: [10, 'atleast 10 character']
         },
         capacity: {
             type: Number,

@@ -38,7 +38,10 @@ const getFareService = (pickup, destination) => {
     };
 
 
-    return fare;
+    return {
+        success: true,
+        data: fare
+    };
 
 }
 
@@ -46,7 +49,7 @@ const generateOTP = (num) => {
     return crypto.randomInt(Math.pow(10, num - 1), Math.pow(10, num)).toString();
 }
 
-const createRideService = asyncError(async ({
+const createRideService = async ({
     user, pickup, destination, vehicleType
 }) => {
 
@@ -55,17 +58,25 @@ const createRideService = asyncError(async ({
     }
 
     const fare = getFareService(pickup, destination);
-
-    console.log(fare);
+    if (fare.success === false) {
+        return {
+            success: false,
+            message: 'unable to get fare'
+        }
+    }
+    
     const ride = await RideModel.create({
         user,
         pickup,
         destination,
-        fare: fare[vehicleType],
+        fare: fare.data[vehicleType],
         otp: generateOTP(4)
     })
 
-    return ride;
-})
+    return {
+        success: true,
+        data: ride
+    };
+}
 
-module.exports = createRideService;
+module.exports = { createRideService, getFareService };
