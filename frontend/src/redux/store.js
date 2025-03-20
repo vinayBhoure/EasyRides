@@ -6,6 +6,8 @@ import { mapAPI } from './api/mapAPI';
 
 import userReducer from './reducer/userReducer'
 import captainReducer from './reducer/captainReducer'
+import { rideAPI } from './api/rideAPI';
+import socketReducer, { initializeSocket } from './reducer/socketReducer';
 
 const store = configureStore({
     reducer: {
@@ -13,18 +15,24 @@ const store = configureStore({
         [userAPI.reducerPath]: userAPI.reducer,
         [captainAPI.reducerPath]: captainAPI.reducer,
         [mapAPI.reducerPath]: mapAPI.reducer,
+        [rideAPI.reducerPath]: rideAPI.reducer,
 
         //reducers must be defined like this
         user: userReducer,
-        captain: captainReducer
+        captain: captainReducer,
+        socket: socketReducer, // Add socket reducer
     },
 
     middleware: (getDefaultMiddleware) => {
         return getDefaultMiddleware().
             concat(userAPI.middleware).
             concat(captainAPI.middleware).
-            concat(mapAPI.middleware)
+            concat(mapAPI.middleware).
+            concat(rideAPI.middleware)
     }
 });
+
+// Dispatch initializeSocket to connect the socket automatically
+store.dispatch(initializeSocket());
 
 export default store;

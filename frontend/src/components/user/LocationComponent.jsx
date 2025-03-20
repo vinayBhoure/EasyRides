@@ -33,7 +33,7 @@ function LocationComponent({ pickup, destination, activeInput, setAddress, setLo
             ...prev,
             [activeInput]: suggestion.mainText
         }));
-        setLocationPanelOpenFunc(false);
+        // setLocationPanelOpenFunc(false);
     }
 
     return (

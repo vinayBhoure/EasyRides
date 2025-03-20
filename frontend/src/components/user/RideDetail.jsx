@@ -2,10 +2,10 @@ import React from 'react'
 
 import { FaUser } from "react-icons/fa6";
 
-function RideDetail({ name, imgSrc, service, price, capacity, setSelectRide }) {
+function RideDetail({ imgSrc, service, price, capacity, setVehicleType }) {
     return (
         <div
-            onClick={() => setSelectRide(service)}
+            onClick={() => setVehicleType(service)}
             className={` flex overflow-hidden rounded-xl border-2 border-gray-300 active:border-black mt-2`}>
             <img
                 src={imgSrc}

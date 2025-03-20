@@ -3,14 +3,14 @@ import SearchingDriver from '../../assets/searching.jpg'
 import { BsThreeDots } from "react-icons/bs";
 import { RxAvatar } from "react-icons/rx";
 
-function SearchingDriverComponent({ setSearchingDriver, setConfirmRide, searchingDriver }) {
+function SearchingDriverComponent({ setSearchingDriver, setConfirmRide, searchingDriver, address }) {
 
     useEffect(() => {
 
         if (searchingDriver === true) {
             setTimeout(() => {
-                setSearchingDriver(false);
-                setConfirmRide(true);
+                // setSearchingDriver(false);
+                // setConfirmRide(true);
             }, 3000)
         }
     }, [searchingDriver])
@@ -32,8 +32,8 @@ function SearchingDriverComponent({ setSearchingDriver, setConfirmRide, searchin
                         <h3>Ride details</h3>
                         <BsThreeDots />
                     </div>
-                    <h1 className='flex items-center'><div className='h-5 w-5 mx-2 rounded-full bg-black'></div>Meet at pickup point</h1>
-                    <h1 className='flex items-center'><div className='h-5 w-5 mx-2 rounded-sm bg-black'></div>indore junction platform 5</h1>
+                    <h1 className='flex items-center'><div className='h-5 w-5 mx-2 rounded-full bg-black'></div>{address.pickup}</h1>
+                    <h1 className='flex items-center'><div className='h-5 w-5 mx-2 rounded-sm bg-black'></div>{address.destination}</h1>
                     <div className='flex items-center gap-2 text-xl border-t border-gray-400 pt-4 '>
                         <RxAvatar size={'3rem'} />
                         <div className='flex w-full justify-between px-1 font-semibold'>

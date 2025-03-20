@@ -13,14 +13,16 @@ import { MdKeyboardArrowDown } from "react-icons/md";
 import Uberpng from '../../assets/pngegg.png'
 import Map from '../../assets/map.jpg'
 import { useNavigate } from 'react-router';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useGetUserProfileQuery } from '../../redux/api/userAPI';
 import { userExist } from '../../redux/reducer/userReducer'
+import { useCreateRideMutation, useGetFareQuery } from '../../redux/api/rideAPI';
+import { sendMessage } from '../../redux/reducer/socketReducer';
 
 function UserHome() {
 
   // const navigate = useNavigate();
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
   // // Get token from localStorage
   // const userToken = localStorage.getItem('tokenU');
@@ -48,7 +50,7 @@ function UserHome() {
     destination: ''
   });
 
-  const [selectOption, setSelectOption] = useState();
+  const [vehicleType, setVehicleType] = useState('');
 
   const [activeInput, setActiveInput] = useState(null);
 
@@ -82,6 +84,32 @@ function UserHome() {
   // if (isLoading) {
   //   return <div>Loading...</div>;
   // }
+
+  const [shouldFetchFare, setShouldFetchFare] = useState(false);
+
+  const { data: fareData, isLoading: isFareLoading, refetch: fetchFare } = useGetFareQuery(
+    { pickup: address.pickup, destination: address.destination },
+    { skip: !shouldFetchFare }
+  );
+
+  useEffect(() => {
+    if (shouldFetchFare) {
+      fetchFare();
+      setShouldFetchFare(false);
+    }
+  }, [shouldFetchFare, fetchFare]);
+
+  const [createRide, { data: rideData, isLoading: isRideLoading }] = useCreateRideMutation({ pickup: address.pickup, destination: address.destination, vehicleType: vehicleType });
+
+  const socket = useSelector((state) => state.socket.socket);
+  const userId = useSelector((state) => state.user.user._id);
+  const userType = 'user'; // Assuming the userType is always 'user' for this component
+
+  useEffect(() => {
+    if (socket && userId) {
+      dispatch(sendMessage({ eventName: 'join', message: { userId, userType } }));
+    }
+  }, [socket, userId, dispatch]);
 
   useGSAP(() => {
     // Animate location panel container if it exists
@@ -150,11 +178,26 @@ function UserHome() {
     e.preventDefault();
     if (address.pickup && address.destination) {
       setLocationPanelOpen(false);
+      setShouldFetchFare(true);
       setVehiclePanelOpen(true);
     } else {
-      alert("Please fill both pickup and destination fields.");
+      toast.success("Please fill both pickup and destination fields.");
     }
-  }
+  };
+
+  const confirmRideHandler = () => {
+    if (vehicleType && address.pickup && address.destination) {
+        createRide({ 
+            pickup: address.pickup, 
+            destination: address.destination, 
+            vehicleType: vehicleType 
+        }); // Pass the required properties here
+        setVehiclePanelOpen(false);
+        setSearchingDriver(true);
+    } else {
+        toast.error("Please select a vehicle and ensure all fields are filled.");
+    }
+  };
 
   return (
     <div className='h-screen w-screen relative overflow-hidden'>
@@ -231,6 +274,10 @@ function UserHome() {
         <VehicleComponent
           setVehiclePaneOpen={setVehiclePanelOpen}
           setSearchingDriver={setSearchingDriver}
+          createRide={confirmRideHandler} // Pass the updated handler
+          fareData={fareData}
+          setVehicleType={setVehicleType}
+          vehicleType={vehicleType}
         />
       </div>
 
@@ -240,7 +287,8 @@ function UserHome() {
         <SearchingDriverComponent
           setSearchingDriver={setSearchingDriver}
           setConfirmRide={setConfirmRide}
-          searchingDriver={searchingDriver} />
+          searchingDriver={searchingDriver}
+          address={address} />
       </div>
 
       {/* Confirm Ride  */}
