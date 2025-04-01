@@ -45,9 +45,10 @@ const captainSchema = new mongoose.Schema({
         },
         number_plate: {
             type: String,
-            required: true,
+            required: [true, 'Number plate is required'],
             unique: true,
-            minlength: [10, 'atleast 10 character']
+            minlength: [10, 'At least 10 characters'],
+            default: 'UNKNOWN' // Ensure it's never null
         },
         capacity: {
             type: Number,
@@ -61,10 +62,10 @@ const captainSchema = new mongoose.Schema({
         }
     },
     location: {
-        latitude: {
+        ltd: {
             type: Number
         },
-        longitude: {
+        lng: {
             type: Number
         }
     }
@@ -85,5 +86,11 @@ captainSchema.methods.comparePassword = async function (password) {
 captainSchema.statics.hashedPassword = async function (password) {
     return await bcrypt.hash(password, 10);
 }
+
+// Create Partial Unique Index to prevent duplicate non-null values
+captainSchema.index(
+    { "vehicle.number_plate": 1 },
+    { unique: true, partialFilterExpression: { "vehicle.number_plate": { $ne: null } } }
+);
 
 module.exports = mongoose.model('Captain', captainSchema);

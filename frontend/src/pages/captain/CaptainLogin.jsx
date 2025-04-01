@@ -1,6 +1,6 @@
 import React from 'react'
 import Uberpng from '../../assets/pngegg.png'
-import { NavLink, useNavigate } from 'react-router'
+import { NavLink, replace, useNavigate } from 'react-router'
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLoginCaptainMutation } from '../../redux/api/captainAPI'
@@ -31,15 +31,16 @@ function CaptainLogin() {
         try {
             const res = await loginCaptain({
                 email: captainLoginInfo.captainEmail,
-                password: captainLoginInfo.captainEmail
+                password: captainLoginInfo.captainPassword
             })
-
-
+            if (res?.error?.data?.success === false) {
+                return toast.error(res?.error?.data?.message)
+            }
             dispatch(captainExist({
-                captain: res.captain,
-                token: res.token
+                captain: res.data.captain,
+                token: res.data.token
             }))
-            localStorage.setItem('tokeknC', res.token)
+            localStorage.setItem('tokenC', res.data.token)
             setCaptainLoginInfo({
                 captainEmail: '',
                 captainPassword: ''

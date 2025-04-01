@@ -1,96 +1,94 @@
+import React, { useRef, useState, useEffect } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react';
-import React, { useRef, useState, useEffect } from 'react'
-
-import LocationComponent from '../../components/user/LocationComponent';
-import VehicleComponent from '../../components/user/VehicleComponent';
-import SearchingDriverComponent from '../../components/user/SearchingDriverComponent';
-import ConfirmRide from '../../components/user/ConfirmRide';
-
-import { MdTimer } from "react-icons/md";
-import { MdKeyboardArrowDown } from "react-icons/md";
-
-import Uberpng from '../../assets/pngegg.png'
-import Map from '../../assets/map.jpg'
-import { useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
-import { useGetUserProfileQuery } from '../../redux/api/userAPI';
+
+import ConfirmRide from '../../components/user/ConfirmRide';
+import FinishRide from '../../components/user/FinishRide';
+import VehicleComponent from '../../components/user/VehicleComponent';
+import LocationComponent from '../../components/user/LocationComponent';
+import SearchingDriverComponent from '../../components/user/SearchingDriverComponent';
+
 import { userExist } from '../../redux/reducer/userReducer'
+import { useLazyGetUserProfileQuery } from '../../redux/api/userAPI';
 import { useCreateRideMutation, useGetFareQuery } from '../../redux/api/rideAPI';
-import { sendMessage } from '../../redux/reducer/socketReducer';
+import { initializeSocket, getSocketInstance } from '../../redux/reducer/socketReducer';
+
+import Map from '../../assets/map.jpg'
+import { MdTimer } from "react-icons/md";
+import Uberpng from '../../assets/pngegg.png'
+import { MdKeyboardArrowDown } from "react-icons/md";
+import LiveTracking from '../../components/LiveTracking';
 
 function UserHome() {
 
-  // const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  // // Get token from localStorage
-  // const userToken = localStorage.getItem('tokenU');
-
-  // // Fetch user profile if token exists
-  // const { data: userProfile, isLoading, isError } = useGetUserProfileQuery(undefined, {
-  //   skip: !userToken
-  // });
-
   const vehiclePanelOpenRef = useRef(null)
-  const [vehiclePanelOpen, setVehiclePanelOpen] = useState(false);
-
   const locationPanelOpenRef = useRef(null)
   const locationPanelCloseRef = useRef(null)
-  const [locationPanelOpen, setLocationPanelOpen] = useState(false);
-
   const searchingDriverRef = useRef(null);
-  const [searchingDriver, setSearchingDriver] = useState(false);
-
   const confirmRideRef = useRef(null);
+  const finishRideRef = useRef(null);
+
+  const [vehiclePanelOpen, setVehiclePanelOpen] = useState(false);
+  const [locationPanelOpen, setLocationPanelOpen] = useState(false);
+  const [searchingDriver, setSearchingDriver] = useState(false);
   const [confirmRide, setConfirmRide] = useState(false);
-
-  const [address, setAddress] = useState({
-    pickup: '',
-    destination: ''
-  });
-
+  const [finishRide, setFinishRide] = useState(false);
   const [vehicleType, setVehicleType] = useState('');
-
   const [activeInput, setActiveInput] = useState(null);
-
-  // const loadUser = () => {
-  //   // If no token exists, redirect to start page
-  //   if (!userToken) {
-  //     navigate('/');
-  //     return;
-  //   }
-  //   // Update Redux store with user data if profile fetch successful
-  //   if (userProfile) {
-  //     dispatch(userExist({
-  //       token: userToken,
-  //       user: userProfile.user,
-  //       isAuthenticated: true
-  //     }));
-  //   }
-
-  //   // Handle error case (invalid token, etc)
-  //   if (isError) {
-  //     localStorage.removeItem('tokenU');
-  //     navigate('/');
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   loadUser();
-  // }, [userProfile, isError, navigate, dispatch]);
-
-  // // Show loading state while fetching profile
-  // if (isLoading) {
-  //   return <div>Loading...</div>;
-  // }
-
   const [shouldFetchFare, setShouldFetchFare] = useState(false);
+
+  const [address, setAddress] = useState({ pickup: '', destination: '' });
+  const [rideDetail, setRideDetail] = useState({});
 
   const { data: fareData, isLoading: isFareLoading, refetch: fetchFare } = useGetFareQuery(
     { pickup: address.pickup, destination: address.destination },
     { skip: !shouldFetchFare }
   );
+  const [createRide, { data: rideData, isLoading: isRideLoading }] = useCreateRideMutation({
+    pickup: address.pickup,
+    destination: address.destination,
+    vehicleType: vehicleType
+  });
+  const [triggerUserProfile] = useLazyGetUserProfileQuery();
+
+  const userType = 'user'; // Assuming the userType is always 'user' for this component
+  const userId = useSelector((state) => state.user.user._id);
+  const connected = useSelector((state) => state.socket.connected);
+
+  const changeHandler = (e) => {
+    setAddress((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+    setActiveInput(e.target.name);
+  }
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+    if (address.pickup && address.destination) {
+      setLocationPanelOpen(false);
+      setShouldFetchFare(true);
+      setVehiclePanelOpen(true);
+    } else {
+      toast.success("Please fill both pickup and destination fields.");
+    }
+  };
+
+  const confirmRideHandler = () => {
+    if (vehicleType && address.pickup && address.destination) {
+      createRide({
+        pickup: address.pickup,
+        destination: address.destination,
+        vehicleType: vehicleType
+      }); // Pass the required properties here
+      setVehiclePanelOpen(false);
+      setSearchingDriver(true);
+    } else {
+      toast.error("Please select a vehicle and ensure all fields are filled.");
+    }
+  };
 
   useEffect(() => {
     if (shouldFetchFare) {
@@ -99,17 +97,76 @@ function UserHome() {
     }
   }, [shouldFetchFare, fetchFare]);
 
-  const [createRide, { data: rideData, isLoading: isRideLoading }] = useCreateRideMutation({ pickup: address.pickup, destination: address.destination, vehicleType: vehicleType });
+  useEffect(() => {
+    const tokenU = localStorage.getItem('tokenU');
+    if (tokenU) {
+      triggerUserProfile().then(({ data }) => {
+        if (data) {
+          dispatch(userExist({ user: data.user, token: tokenU }));
+        }
+      });
+    }
+  }, [dispatch, triggerUserProfile]);
 
-  const socket = useSelector((state) => state.socket.socket);
-  const userId = useSelector((state) => state.user.user._id);
-  const userType = 'user'; // Assuming the userType is always 'user' for this component
 
   useEffect(() => {
-    if (socket && userId) {
-      dispatch(sendMessage({ eventName: 'join', message: { userId, userType } }));
+    dispatch(initializeSocket()); // Initialize the socket connection
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (connected && userId) {
+      const socket = getSocketInstance(); // Get the socket instance
+      if (socket) {
+        socket.emit('join', { userId, userType }); // Use socket.emit directly
+      }
     }
-  }, [socket, userId, dispatch]);
+  }, [connected, userId]);
+
+  useEffect(() => {
+    const socket = getSocketInstance();
+    if (socket) {
+      socket.on('ride-confirmed', (data) => {
+        setRideDetail(data.data);
+        setSearchingDriver(false);
+        setConfirmRide(true);
+      })
+    }
+
+    return () => {
+      socket.off('ride-confirmed');
+    }
+  }, [])
+
+  useEffect(() => {
+    const socket = getSocketInstance();
+    if (socket) {
+      socket.on('ride-started', (data) => {
+        console.log('ride started');
+        setRideDetail(data.data);
+        setFinishRide(true);
+        setConfirmRide(false);
+      })
+    }
+
+    return () => {
+      socket.off('ride-started');
+    }
+  }, [])
+
+  useEffect(() => {
+    const socket = getSocketInstance();
+    if (socket) {
+      socket.on('ride-completed', (data) => {
+        console.log('ride completed', data);
+        setFinishRide(false);
+        window.location.reload();
+      })
+    }
+
+    return () => {
+      socket.off('ride-completed');
+    }
+  }, [])
 
   useGSAP(() => {
     // Animate location panel container if it exists
@@ -156,6 +213,17 @@ function UserHome() {
   }, [searchingDriver])
 
   useGSAP(() => {
+    if (finishRideRef.current) {
+      let anim = gsap.to(finishRideRef.current, {
+        transform: finishRide ? 'translateY(0)' : 'translateY(100%)',
+        paused: true
+      })
+      anim.play();
+      return () => anim.kill();
+    }
+  }, [finishRide])
+
+  useGSAP(() => {
     if (confirmRideRef.current) {
       let anim = gsap.to(confirmRideRef.current, {
         transform: confirmRide ? 'translateY(0)' : 'translateY(100%)',
@@ -166,39 +234,6 @@ function UserHome() {
     }
   }, [confirmRide])
 
-  const changeHandler = (e) => {
-    setAddress((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-    setActiveInput(e.target.name);
-  }
-
-  const submitHandler = (e) => {
-    e.preventDefault();
-    if (address.pickup && address.destination) {
-      setLocationPanelOpen(false);
-      setShouldFetchFare(true);
-      setVehiclePanelOpen(true);
-    } else {
-      toast.success("Please fill both pickup and destination fields.");
-    }
-  };
-
-  const confirmRideHandler = () => {
-    if (vehicleType && address.pickup && address.destination) {
-        createRide({ 
-            pickup: address.pickup, 
-            destination: address.destination, 
-            vehicleType: vehicleType 
-        }); // Pass the required properties here
-        setVehiclePanelOpen(false);
-        setSearchingDriver(true);
-    } else {
-        toast.error("Please select a vehicle and ensure all fields are filled.");
-    }
-  };
-
   return (
     <div className='h-screen w-screen relative overflow-hidden'>
       <img
@@ -207,12 +242,16 @@ function UserHome() {
       />
 
       {/* background map image */}
-      <div className='object-cover h-screen w-screen'>
-        <img src={Map} alt='' className='w-full h-full' />
+      <div
+        className='object-cover h-screen w-screen relative'>
+        <div className="absolute inset-0 z-0">
+          <LiveTracking containerStyle={{ height: '100%', width: '100%' }} />
+        </div>
       </div>
 
       {/* Add pickup and destination */}
-      <div className='h-screen w-full absolute  top-0 flex flex-col justify-end'>
+      <div
+        className='max-h-screen w-full absolute bottom-0 flex flex-col justify-end'>
         <div className='min-h-max p-5 rounded-t-3xl bg-white'>
           {
             locationPanelOpen && <MdKeyboardArrowDown size={'2rem'} className='absolute right-5' ref={locationPanelCloseRef} onClick={() => setLocationPanelOpen(false)} />
@@ -282,19 +321,29 @@ function UserHome() {
       </div>
 
       {/* Driver Searching */}
-      <div ref={searchingDriverRef}
+      <div
+        ref={searchingDriverRef}
         className='fixed translate-y-full bottom-0 bg-white rounded-t-3xl  w-screen'>
         <SearchingDriverComponent
           setSearchingDriver={setSearchingDriver}
-          setConfirmRide={setConfirmRide}
-          searchingDriver={searchingDriver}
           address={address} />
       </div>
 
       {/* Confirm Ride  */}
-      <div ref={confirmRideRef}
+      <div
+        ref={confirmRideRef}
         className='absolute bottom-0 translate-y-full bg-white rounded-t-3xl w-screen'>
-        <ConfirmRide />
+        <ConfirmRide
+          rideDetail={rideDetail}
+        />
+      </div>
+
+      <div
+        ref={finishRideRef}
+        className='absolute bottom-0 translate-y-full bg-white rounded-t-3xl w-screen'>
+        <FinishRide
+          rideDetail={rideDetail}
+        />
       </div>
 
     </div>

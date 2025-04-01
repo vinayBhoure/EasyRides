@@ -55,7 +55,7 @@ function LocationComponent({ pickup, destination, activeInput, setAddress, setLo
                     </div>
                 ))}
             </div>
-            <div>
+            {/* <div>
                 <div className='flex justify-start border-2 border-transparent rounded-xl p-1 active:border-black items-center gap-4 mt-3'>
                     <div className='bg-[#eee] p-3 rounded-xl'>
                         <FaBookmark />
@@ -68,7 +68,7 @@ function LocationComponent({ pickup, destination, activeInput, setAddress, setLo
                     </div>
                     <h4 className=' text-lg'>Set location on map</h4>
                 </div>
-            </div>
+            </div> */}
         </div>
     )
 }

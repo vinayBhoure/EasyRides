@@ -6,7 +6,6 @@ export const userAPI = createApi({
     reducerPath: 'userAPI',
     baseQuery: fetchBaseQuery({
         baseUrl: url,
-        // credentials: 'include',
         prepareHeaders: (headers, { getState }) => {
             const token = getState()?.user?.token || localStorage.getItem('tokenU')
             if (token) {
@@ -39,8 +38,11 @@ export const userAPI = createApi({
             query: () => '/profile'
         }),
 
-        logoutUser: builder.query({
-            query: () => '/logout'
+        logoutUser: builder.mutation({
+            query: () => ({
+                url: '/logout',
+                method: 'POST'
+            })
         }),
 
         deleteUser: builder.mutation({
@@ -56,6 +58,7 @@ export const {
     useRegisterUserMutation,
     useLoginUserMutation,
     useGetUserProfileQuery,
-    useLogoutUserQuery,
+    useLazyGetUserProfileQuery, // Added export for lazy query
+    useLogoutUserMutation,
     useDeleteUserMutation
 } = userAPI;

@@ -1,44 +1,48 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { io } from 'socket.io-client';
 
-const socketState = {
-    socket: io('http://localhost:5000'), // Automatically connect to the server
-    connected: false,
-};
+let socket = null; // Manage the socket instance outside the Redux state
 
 const socketSlice = createSlice({
     name: 'socket',
-    initialState: socketState,
+    initialState: {
+        connected: false,
+        socketId: null,
+    },
     reducers: {
-        initializeSocket: (state) => {
-            state.socket.on('connect', () => {
-                state.connected = true;
-            });
-            state.socket.on('disconnect', () => {
-                state.connected = false;
-            });
+        setSocketConnected: (state, action) => {
+            state.connected = action.payload.connected;
+            state.socketId = action.payload.socketId;
         },
-        sendMessage: (state, action) => {
-            const { eventName, message } = action.payload;
-            if (state.socket && state.connected) {
-                state.socket.emit(eventName, message);
-            }
-        },
-        receiveMessage: (state, action) => {
-            const { eventName, callback } = action.payload;
-            if (state.socket) {
-                state.socket.on(eventName, callback);
-            }
+        setSocketDisconnected: (state) => {
+            state.connected = false;
+            state.socketId = null;
         },
         disconnectSocket: (state) => {
-            if (state.socket) {
-                state.socket.disconnect();
+            if (socket) {
+                socket.disconnect();
+                socket = null;
                 state.connected = false;
-                state.socket = null;
+                state.socketId = null;
             }
         },
     },
 });
 
-export const { initializeSocket, sendMessage, receiveMessage, disconnectSocket } = socketSlice.actions;
+export const { setSocketConnected, setSocketDisconnected, disconnectSocket } = socketSlice.actions;
+
+export const initializeSocket = () => (dispatch) => {
+    if (!socket) {
+        socket = io('http://localhost:5000'); // Replace with your server URL
+        socket.on('connect', () => {
+            dispatch(setSocketConnected({ connected: true, socketId: socket.id }));
+        });
+        socket.on('disconnect', () => {
+            dispatch(setSocketDisconnected());
+        });
+    }
+};
+
+export const getSocketInstance = () => socket; // Expose the socket instance for direct use
+
 export default socketSlice.reducer;

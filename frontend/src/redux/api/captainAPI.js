@@ -7,7 +7,7 @@ export const captainAPI = createApi({
     baseQuery: fetchBaseQuery({
         baseUrl: url,
         prepareHeaders: (headers, { getState }) => {
-            const token = headers?.auth?.token
+            const token = getState()?.captain?.token || localStorage.getItem('tokenC')
             if (token) {
                 headers.set('Authorization', `Bearer ${token}`)
             }
@@ -35,8 +35,11 @@ export const captainAPI = createApi({
         getCaptainProfile: builder.query({
             query: () => '/profile'
         }),
-        logoutCaptain: builder.query({
-            query: () => '/logout'
+        logoutCaptain: builder.mutation({
+            query: () => ({
+                url: '/logout',
+                method: 'POST'
+            })
         }),
         deleteCaptain: builder.mutation({
             query: () => ({
@@ -52,5 +55,6 @@ export const {
     useLoginCaptainMutation,
     useDeleteCaptainMutation,
     useGetCaptainProfileQuery,
-    useLogoutCaptainQuery,
-} = captainAPI
+    useLazyGetCaptainProfileQuery, // Added export for lazy query
+    useLogoutCaptainMutation,
+} = captainAPI;

@@ -1,4 +1,5 @@
-const asyncError = require('../middlewares/asyncError')
+const asyncError = require('../middlewares/asyncError');
+const captainModel = require('../models/captainModel');
 
 const getLocationCoordinates = async (address) => {
     // Validate input
@@ -22,8 +23,8 @@ const getLocationCoordinates = async (address) => {
         return {
             success: true,
             data: {
-                latitude: location.lat,
-                longitude: location.lng
+                ltd: location.lat,
+                lng: location.lng
             }
         };
     } else {
@@ -110,4 +111,22 @@ const getSuggestionsForAddress = async (address) => {
         }
     }
 };
-module.exports = { getLocationCoordinates, getDistanceBetweenLocation, getSuggestionsForAddress };
+
+const getCaptainsInTheRadius = async (ltd, lng, radius) => {
+    // radius in km
+    const captains = await captainModel.find({
+        location: {
+            $geoWithin: {
+                $centerSphere: [[ltd, lng], radius / 6371]
+            }
+        }
+    });
+    return captains;
+}
+
+module.exports = {
+    getLocationCoordinates,
+    getDistanceBetweenLocation,
+    getSuggestionsForAddress,
+    getCaptainsInTheRadius
+};

@@ -1,4 +1,7 @@
-const asyncError = require("./asyncError");
+const jwt = require('jsonwebtoken');
+const asyncError = require('./asyncError');
+const BlackListedToken = require('../models/BlackListedToken');
+const captainModel = require('../models/captainModel');
 
 
 const verifyCapitain = asyncError(async (req, res, next) => {

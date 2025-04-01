@@ -64,7 +64,7 @@ const createRideService = async ({
             message: 'unable to get fare'
         }
     }
-    
+
     const ride = await RideModel.create({
         user,
         pickup,
@@ -79,4 +79,34 @@ const createRideService = async ({
     };
 }
 
-module.exports = { createRideService, getFareService };
+const confirmRideService = async (rideId, captainId) => {
+    if (!rideId) {
+        return {
+            success: false,
+            message: 'no ride '
+        }
+    }
+
+    await RideModel.findByIdAndUpdate({
+        _id: rideId
+    }, {
+        status: 'accepted',
+        captain: captainId
+    })
+
+    const ride = await RideModel.findOne({
+        _id: rideId
+    }).populate('user').populate('captain').select('+otp');
+
+    if (!ride) {
+        throw new Error('Ride not found');
+    }
+
+    return {
+        success: true,
+        data: ride
+    }
+
+}
+
+module.exports = { createRideService, getFareService, confirmRideService };

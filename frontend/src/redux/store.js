@@ -8,6 +8,7 @@ import userReducer from './reducer/userReducer'
 import captainReducer from './reducer/captainReducer'
 import { rideAPI } from './api/rideAPI';
 import socketReducer, { initializeSocket } from './reducer/socketReducer';
+import rideReducer from './reducer/rideReducer';
 
 const store = configureStore({
     reducer: {
@@ -21,6 +22,7 @@ const store = configureStore({
         user: userReducer,
         captain: captainReducer,
         socket: socketReducer, // Add socket reducer
+        ride: rideReducer
     },
 
     middleware: (getDefaultMiddleware) => {

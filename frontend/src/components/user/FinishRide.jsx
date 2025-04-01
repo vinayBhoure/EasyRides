@@ -6,7 +6,7 @@ import { FaPhoneAlt } from "react-icons/fa";
 
 import Car from '../../assets/car.jpg'
 
-function ConfirmRide({rideDetail}) {
+function FinishRide({rideDetail}) {
 
     const captainName = rideDetail?.captain?.fullname?.firstname + " " + rideDetail?.captain?.fullname?.lastname
     const numberPlate = rideDetail?.captain?.vehicle?.number_plate
@@ -14,9 +14,6 @@ function ConfirmRide({rideDetail}) {
     const fare = rideDetail?.fare
     const otp = rideDetail?.otp
 
-    useMemo(()=>{
-        console.log(rideDetail)
-    }, [rideDetail])
     return (
         <div className='p-4'>
             <div className='flex justify-between items-center text-right'>
@@ -26,10 +23,6 @@ function ConfirmRide({rideDetail}) {
                     <h2 className='text-xl font-bold'>{numberPlate}</h2>
                     <h4 className='text-base font'>Maruti suzuki alto</h4>
                 </div>
-            </div>
-            <div className='bg-amber-300 rounded-lg p-2 mt-2'>
-                <h3 className='text-center text-lg font-semibold'>Captain is on the way</h3>
-                <p className='text-center text-xl font-bold'>OPT - ${otp}</p>
             </div>
             <div className='flex flex-col gap-2 mt-5'>
                 <div className='flex items-center gap-4'>
@@ -48,10 +41,9 @@ function ConfirmRide({rideDetail}) {
                     </div>
                 </div>
             </div>
-            <button className='items-center flex justify-center gap-2 w-full bg-green-500 text-xl text-white rounded p-2 mt-5'><FaPhoneAlt /> Call</button>
-            <button className='text-center w-full bg-red-500 text-xl text-white rounded p-2 mt-5'>Cancel Ride</button>
+            <button className='items-center flex justify-center gap-2 w-full bg-green-500 text-xl text-white rounded p-2 mt-5'>Make Payment</button>
         </div>
     )
 }
 
-export default ConfirmRide
+export default FinishRide

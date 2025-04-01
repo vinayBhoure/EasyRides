@@ -2,6 +2,8 @@ const asyncError = require("../middlewares/asyncError");
 const BlackListedToken = require("../models/BlackListedToken");
 const CaptainModel = require('../models/captainModel')
 const stringToVehicle = require('../utility/stringToVehicle')
+const bcrypt = require('bcrypt');
+const { sendMessageToSocketId } = require("../socket");
 
 const registerCaptain = asyncError(async (req, res) => {
     const {
@@ -26,15 +28,30 @@ const registerCaptain = asyncError(async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'all fields are required'
-        })
+        });
     }
 
+    const formattedNumberPlate = stringToVehicle(number_plate) || "UNKNOWN";
+    if (!formattedNumberPlate || formattedNumberPlate === "invalid number plate") {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid number plate format'
+        });
+    }
     let captain = await CaptainModel.findOne({ email });
     if (captain) {
         return res.status(401).json({
             success: false,
             message: 'already exists'
-        })
+        });
+    }
+
+    let existingVehicle = await CaptainModel.findOne({ "vehicle.number_plate": formattedNumberPlate });
+    if (existingVehicle) {
+        return res.status(409).json({
+            success: false,
+            message: 'Number plate already registered'
+        });
     }
 
     const hashedPassword = await CaptainModel.hashedPassword(password);
@@ -46,7 +63,7 @@ const registerCaptain = asyncError(async (req, res) => {
         status,
         vehicle: {
             color,
-            number_plate: stringToVehicle(number_plate),
+            number_plate: formattedNumberPlate,
             capacity,
             type
         },
@@ -54,20 +71,29 @@ const registerCaptain = asyncError(async (req, res) => {
             latitude,
             longitude
         }
-    })
+    });
 
-    await newCaptain.save();
+    try {
+        await newCaptain.save();
+    } catch (error) {
+        if (error.code === 11000 && error.keyPattern['vehicle.number_plate']) {
+            return res.status(400).json({
+                success: false,
+                message: 'Number plate already exists'
+            });
+        }
+        throw error;
+    }
 
     const token = await newCaptain.generateToken();
     res.status(200).json({
         success: true,
         message: 'captain successfully registered',
-        newCaptain,
+        captain: newCaptain,
         token
-    })
-
-
+    });
 });
+
 const loginCaptain = asyncError(async (req, res) => {
 
     const { email, password } = req.body
@@ -86,7 +112,7 @@ const loginCaptain = asyncError(async (req, res) => {
             message: 'Invalid user'
         })
     }
-
+    
     const isMatch = await captain.comparePassword(password);
     if (!isMatch) {
         return res.status(400).json({
@@ -103,12 +129,41 @@ const loginCaptain = asyncError(async (req, res) => {
         captain
     })
 });
+
 const getCaptainProfile = asyncError(async (req, res) => {
     res.status(200).json({
         success: true,
-        user: req.captain
+        captain: req.captain
     })
 });
+
+const updateCaptainStatus = asyncError(async( req, res) => {
+    const captainId = req.captain._id;
+
+    const captain = await CaptainModel.findById(captainId);
+    if (!captain) {
+        return res.status(404).json({
+            success: false,
+            message: 'Captain not found'
+        });
+    }
+
+    captain.status = captain.status === 'inactive' ? 'active' : 'inactive';
+    await captain.save();
+
+    res.status(200).json({
+        success: true,
+        message: 'Captain status updated successfully',
+        status: captain.status
+    });
+
+    sendMessageToSocketId(captain.socketId, {
+        event: 'status-updated',
+        data: captain
+    })
+    
+});
+
 const logoutCaptain = asyncError(async (req, res) => {
     const token = req.headers.authorization.split(" ")[1];
     const expToken = await BlackListedToken.create({ token: token })
@@ -131,5 +186,6 @@ module.exports = {
     loginCaptain,
     getCaptainProfile,
     logoutCaptain,
-    terminateCaptain
+    terminateCaptain,
+    updateCaptainStatus
 }

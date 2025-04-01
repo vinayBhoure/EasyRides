@@ -3,17 +3,7 @@ import SearchingDriver from '../../assets/searching.jpg'
 import { BsThreeDots } from "react-icons/bs";
 import { RxAvatar } from "react-icons/rx";
 
-function SearchingDriverComponent({ setSearchingDriver, setConfirmRide, searchingDriver, address }) {
-
-    useEffect(() => {
-
-        if (searchingDriver === true) {
-            setTimeout(() => {
-                // setSearchingDriver(false);
-                // setConfirmRide(true);
-            }, 3000)
-        }
-    }, [searchingDriver])
+function SearchingDriverComponent({ setSearchingDriver, address }) {
 
     return (
         <div>

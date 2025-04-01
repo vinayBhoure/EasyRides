@@ -1,6 +1,7 @@
 const socketIO = require('socket.io');
 const UserModel = require('./models/User');
 const CaptainModel = require('./models/captainModel');
+const captainModel = require('./models/captainModel');
 let io;
 
 function initializeSocket(server) {
@@ -11,26 +12,43 @@ function initializeSocket(server) {
         }
     });
     io.on('connection', (socket) => {
-        console.log('A user connected:', socket.id);
+        console.log('Socket connection Started:', socket.id);
 
         socket.on('join', async (data) => {
             const { userId, userType } = data;
 
             if (userType === 'user') {
-                await UserModel.findByIdAndUpdate(
+                const res = await UserModel.findByIdAndUpdate(
                     userId,
                     { socketId: socket.id },
-                    // { new: true } 
+                    { new: true }
                 )
                 socket.join('users');
+                console.log('User joined:', socket.id);
             } else if (userType === 'captain') {
-                await CaptainModel.findByIdAndUpdate(
+                const res = await CaptainModel.findByIdAndUpdate(
                     userId,
                     { socketId: socket.id },
-                    // { new: true }
+                    { new: true }
                 )
                 socket.join('captains');
+                console.log('Captain joined:', socket.id);
             }
+        })
+
+        socket.on('update-location-captain', async (data) => {
+
+            const { userId, location } = data;
+
+            if (!location || !location.ltd || !location.lng) {
+                return socket.emit('error', { message: 'Invalid location data' });
+            }
+            await captainModel.findByIdAndUpdate(userId, {
+                location: {
+                    ltd: location.ltd,
+                    lng: location.lng
+                }
+            })
         })
 
         socket.on('disconnect', () => {
@@ -39,9 +57,10 @@ function initializeSocket(server) {
     });
 }
 
-function sendMessageToSocketId(socketId, message) {
+function sendMessageToSocketId(socketId, messageObject) {
     if (io) {
-        io.to(socketId).emit('message', message);
+        console.log(`Sending event '${messageObject.event}' to socketId: ${socketId}`);
+        io.to(socketId).emit(messageObject.event, messageObject.data);
     } else {
         console.error('Socket.io is not initialized.');
     }

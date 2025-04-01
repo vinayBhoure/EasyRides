@@ -60,7 +60,7 @@ function CaptainSignUp() {
       }
       const res = await registerCaptain(newCaptain);
 
-      if (res.success === "true") {
+      if (res.success === true) {
         dispatch(captainExist({
           captain: res.newCaptain,
           token: res.token
